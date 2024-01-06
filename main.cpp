@@ -7,8 +7,8 @@ const int MAX_PROCESSES = 5;
 const int MAX_RESOURCES = 5;
 
 int available[MAX_RESOURCES];  //number of resources available
-int maximum_need[MAX_PROCESSES][MAX_RESOURCES];  //max resources one process can request
-int allocation[MAX_PROCESSES][MAX_RESOURCES];  //number of resources allocated to a process
+int maximum_need[MAX_PROCESSES][MAX_RESOURCES];  //max resources one process needs to execute
+int allocation[MAX_PROCESSES][MAX_RESOURCES];  //number of resources already allocated to a process
 int need[MAX_PROCESSES][MAX_RESOURCES];  //number of resources a process needs to complete
 
 
@@ -88,12 +88,40 @@ bool isSafeState(int processes, int resources){
         }
     }
 
-    return true;  //... else the system is in safe state
+    return true;  /*
+                    ... else the system is in safe state
+                    there's a possible "safe" sequence that every process 
+                    can be executed with the resources provided
+                */
 }
 
 
 
-bool requestResource(int process, int request[], int processes, int resources){
+bool requestResource(int selected_process, int request[], int processes, int resources){
+
+    //check if request is over the maximum need of a process
+    for (int i=0; i<resources; i++){
+        if (request[i] > maximum_need[selected_process][i]){
+            return false;
+        }
+    }
+
+    //check if there's enough available to provide
+    //if available > request, then there's enough resources to provide what's requested
+    for (int i=0; i<resources; i++){
+        if (request[i] > available[i]){
+            return false;  //cannot provide
+        }
+    }
+
+    //allocate request resources to process
+    for (int i=0; i<resources; i++){
+        available[i] -= request[i];
+        allocation[selected_process][i] += request[i];
+        need[selected_process][i] -= request[i];
+    }
+
+    //check if the system is in a safe state after allocation
     if (!isSafeState(processes, resources)){
         return false;  //request cant be granted
     }
@@ -113,7 +141,7 @@ int main(){
     cout << "Enter the number of resources: ";
     cin >> resources;
 
-    cout << "Enter the available resources (must be equal to the number of resources): ";
+    cout << "Enter the available resources: ";
     for (int i=0; i<resources; i++){
         cin >> available[i];
     }
@@ -136,18 +164,13 @@ int main(){
         }
     }
 
-
-
     //call function to check the state of system
-
-
     if (isSafeState(processes, resources)){
         cout << "System is in a safe state";
-        cout << "The resources given, it can be properly allocated to every process.";
+        cout << "With the resources given, it can be properly allocated to every process.";
 
 
         //handle resource request here
-        //enter the process' resource request, then check if it can be granted or not
 
         //generate random process num
         int min = 0;
@@ -162,7 +185,11 @@ int main(){
             cin >> request[i];
         }
 
-        //check if request can be granted
+        /*
+        check if request can be granted
+        to be granted, check if the system is in safe state
+        if not, deny the request
+        */
         if (requestResource(random_process, request, processes, resources)){
             cout << "Request Granted. Ending program...";
         } else {

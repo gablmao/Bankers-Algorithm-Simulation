@@ -145,10 +145,30 @@ int main(){
         cout << "System is in a safe state";
         cout << "The resources given, it can be properly allocated to every process.";
 
-        //if it's in a safe state, enter the request of any process
+
+        //handle resource request here
         //enter the process' resource request, then check if it can be granted or not
 
-        
+        //generate random process num
+        int min = 0;
+        int max = processes;
+        int random_process = rand()%(max-min + 1) + min;
+
+        cout << "----- NOTICE: REQUEST FOR RESOURCES FROM PROCESS " << random_process << " ------";
+        int request[MAX_RESOURCES];
+
+        cout << "Enter the request for resources for this process: ";
+        for (int i=0; i<resources; i++){
+            cin >> request[i];
+        }
+
+        //check if request can be granted
+        if (requestResource(random_process, request, processes, resources)){
+            cout << "Request Granted. Ending program...";
+        } else {
+            cout << "Request has been denied. Ending program...";
+        }
+
     } else {
         cout << "System, is not in a safe state";
         cout << "With the resources given, it cannot be properly allocated to every process. Ending program...";
